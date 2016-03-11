@@ -1,0 +1,194 @@
+<html>
+<canvas id="gameCanvas" width="800" height="600"></canvas> <!--block for game to take place. The id is a label-->
+<script>
+var canvas;
+var canvasContext;
+var ballX = 50;
+var ballSpeedX = 15;
+var ballY = 50;
+var ballSpeedY = 4;
+
+const PADDLE_WIDTH = 10;
+const PADDLE_HEIGHT = 125;
+var paddle1Y = 250;
+var paddle2Y = 250; 
+
+const WINNING_SCORE = 5;
+var player1Score = 0;
+var player2Score = 0;
+var showingWinScreen = false;
+
+function calculateMousePos(evt) // going to call this function everytime the mouse moves. evt -> mouse coords
+{
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+	var mouseX = evt.clientX - rect.left - root.scrollLeft;
+	var mouseY = evt.clientY - rect.top - root.scrollTop;
+	return mouseY;
+	// {
+	// 	x:mouseX
+	// 	y:mouseY
+	// };
+}
+
+function handleMouseClick(evt)
+{
+	if(showingWinScreen)
+	{
+		scoreReset();
+		showingWinScreen = false;
+	}
+}
+window.onload = function()
+{
+	//console.log("Hello World!"); // this is executed only when page fully loads.
+	canvas = document.getElementById('gameCanvas');
+	canvasContext = canvas.getContext('2d'); 
+
+	var FPS = 30; // Frames per second
+	setInterval(function() //inline function // Also, setinterval sets a delay constant. 
+	{
+		movestuff();
+		drawStuff();
+	},1000/FPS); // call drawstuff every 1000ms after page is loaded.
+
+	canvas.addEventListener('mousedown',handleMouseClick);
+
+	canvas.addEventListener('mousemove', // gets mouse info and syncs it to paddle1 position
+		function(evt)
+		{
+			var mousePos = calculateMousePos(evt);
+			paddle1Y = mousePos - (PADDLE_HEIGHT/2); // we subract that quantity to centre align the mouse with paddle1
+		})
+}
+
+function ballReset()
+{
+	if(player1Score >= WINNING_SCORE || player2Score >= WINNING_SCORE)
+	{
+		showingWinScreen = true;
+	}
+	ballSpeedX = -1*ballSpeedX;
+	ballX = canvas.width/2;
+	ballY = canvas.height/2;
+}
+
+function computerMovement()
+{
+	var paddle2YCentre = paddle2Y + (PADDLE_HEIGHT/2);
+	if(paddle2YCentre < ballY - 55) // if the paddle is above the ball, we move it down
+	{
+		paddle2Y = paddle2Y + 7;
+	}
+	else if(paddle2YCentre > ballY+55)
+	{
+		paddle2Y = paddle2Y - 7;
+	}
+}
+
+function movestuff()
+{
+	if(showingWinScreen)
+	{
+		return;
+	}
+	computerMovement();
+	ballX = ballX + ballSpeedX;
+	ballY = ballY + ballSpeedY;
+	if(ballX<0) // approaches left edge
+	{
+		if(ballY > paddle1Y && ballY < paddle1Y + PADDLE_HEIGHT) // if its supposed to touch the paddle
+		{
+			ballSpeedX = -1*ballSpeedX; // bounces off paddle
+			var deltaY = ballY - (paddle1Y + PADDLE_HEIGHT/2)
+			ballSpeedY = deltaY * 0.35;
+		}
+		else
+		{
+			player2Score++;
+			ballReset(); // otherwise, the ball position is reset
+		}
+	}
+
+	if(ballX > canvas.width)
+	{
+		if(ballY > paddle2Y && ballY< paddle2Y + PADDLE_HEIGHT) // if its supposed to touch the paddle
+		{
+			ballSpeedX = -1*ballSpeedX; // bounces off paddle
+			var deltaY = ballY - (paddle2Y + PADDLE_HEIGHT/2)
+			ballSpeedY = deltaY * 0.35;
+		}
+		else
+		{
+			player1Score++;
+			ballReset(); // otherwise, the ball position is reset
+		}
+	}
+
+	if(ballY >=canvas.height || ballY<=0)
+	{
+		ballSpeedY = -1*ballSpeedY;
+	}
+	//console.log(ballX); // prints value of ballX on console
+}
+
+function scoreReset()
+{
+	player1Score = 0;
+	player2Score = 0;
+}
+
+function drawNet()
+{
+	for(var i=0;i<canvas.height;i+=40)
+	{
+		drawRect(canvas.width/2 - 1 ,i,2,20,'white');
+	}
+}
+function drawStuff()
+{
+	drawRect(0,0,canvas.width,canvas.height,'black'); // 0,0 -> hor and vert coord of the top left corner. canvas.width -> 800px and canvas.height -> 600px which correspond to the bottom right corner
+	//first paddle (first player)
+	if(showingWinScreen)
+	{
+		canvasContext.fillStyle = 'white';
+		canvasContext.fillText("Click to Replay!",360,500);
+		if(player1Score >= WINNING_SCORE)
+		{
+			canvasContext.fillText("You Won!  ^_^",360,200);
+		}
+		else if (player2Score >= WINNING_SCORE)
+		{
+			canvasContext.fillText("You Lost!  :(",360,200);
+		}
+		return;
+	}
+	drawNet();
+
+	//first paddle (first player)
+	drawRect(0,paddle1Y,PADDLE_WIDTH,PADDLE_HEIGHT,'white'); 
+	//second paddle (second player)
+	drawRect(canvas.width-PADDLE_WIDTH,paddle2Y,PADDLE_WIDTH,PADDLE_HEIGHT,'white');
+	// circle (ball)
+	canvasContext.fillStyle = 'white';
+	canvasContext.beginPath(); // to make it a circle
+	drawCircle(ballX,ballY,PADDLE_WIDTH,'white'); // (X[centre],Y[centre],radius,rad_start,rad_end)
+	canvasContext.fillText(player1Score,100,100);
+	canvasContext.fillText(player2Score,canvas.width-100,100);
+}
+
+function drawCircle(centreX,centreY,radius,color)
+{
+	canvasContext.fillStyle = color;
+	canvasContext.beginPath(); // to make  a circle
+	canvasContext.arc(centreX,centreY,radius,0,Math.PI*2,true); // (X[centre],Y[centre],radius,rad_start,rad_end)
+	canvasContext.fill();
+}
+function drawRect(leftX,topY,width,height,color) //  no data types! 
+{
+	canvasContext.fillStyle = color;
+	canvasContext.fillRect(leftX,topY,width,height);
+}
+</script>
+
+</html>
