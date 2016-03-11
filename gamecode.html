@@ -25,10 +25,6 @@ function calculateMousePos(evt) // going to call this function everytime the mou
 	var mouseX = evt.clientX - rect.left - root.scrollLeft;
 	var mouseY = evt.clientY - rect.top - root.scrollTop;
 	return mouseY;
-	// {
-	// 	x:mouseX
-	// 	y:mouseY
-	// };
 }
 
 function handleMouseClick(evt)
@@ -41,7 +37,7 @@ function handleMouseClick(evt)
 }
 window.onload = function()
 {
-	//console.log("Hello World!"); // this is executed only when page fully loads.
+
 	canvas = document.getElementById('gameCanvas');
 	canvasContext = canvas.getContext('2d'); 
 
@@ -129,7 +125,6 @@ function movestuff()
 	{
 		ballSpeedY = -1*ballSpeedY;
 	}
-	//console.log(ballX); // prints value of ballX on console
 }
 
 function scoreReset()
